@@ -3,15 +3,5 @@
   "outputDirectory": "dist",
   "devCommand": "npm run dev",
   "installCommand": "npm install",
-  "framework": "vite",
-  "env": {
-    "VITE_SUPABASE_URL": "@supabase-url",
-    "VITE_SUPABASE_PUBLISHABLE_KEY": "@supabase-key"
-  },
-  "build": {
-    "env": {
-      "VITE_SUPABASE_URL": "@supabase-url",
-      "VITE_SUPABASE_PUBLISHABLE_KEY": "@supabase-key"
-    }
-  }
+  "framework": "vite"
 }

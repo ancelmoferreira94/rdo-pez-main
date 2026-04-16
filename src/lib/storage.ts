@@ -25,7 +25,15 @@ export async function loadProjects(): Promise<Project[]> {
     console.warn('[storage] Supabase não configurado — usando localStorage');
     return loadFromLocal<Project>('jpl-projects');
   }
-  const { data, error } = await supabase.from('projects').select('*');
+  
+  // Obter usuário logado
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .eq('user_id', user?.id);
+    
   if (error) { console.error('loadProjects error:', error); return []; }
   return (data ?? []).map(row => row.data as unknown as Project);
 }
@@ -34,10 +42,15 @@ export async function saveProject(project: Project): Promise<Project[]> {
   if (!isSupabaseReady()) {
     return saveToLocal<Project>('jpl-projects', project, p => p.id);
   }
+  
+  // Obter usuário logado
+  const { data: { user } } = await supabase.auth.getUser();
+  
   const { error } = await supabase.from('projects').upsert({
     id: project.id,
     name: project.name,
     data: project as unknown as Json,
+    user_id: user?.id,
   });
   if (error) console.error('saveProject error:', error);
   return loadProjects();
@@ -59,7 +72,11 @@ export async function loadDiaries(projectId?: string): Promise<DiaryEntry[]> {
     const all = loadFromLocal<DiaryEntry>('jpl-diaries');
     return projectId ? all.filter(d => d.projectId === projectId) : all;
   }
-  let query = supabase.from('diaries').select('*');
+  
+  // Obter usuário logado
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  let query = supabase.from('diaries').select('*').eq('user_id', user?.id);
   if (projectId) query = query.eq('project_id', projectId);
   const { data, error } = await query;
   if (error) { console.error('loadDiaries error:', error); return []; }
@@ -70,10 +87,15 @@ export async function saveDiary(diary: DiaryEntry): Promise<DiaryEntry[]> {
   if (!isSupabaseReady()) {
     return saveToLocal<DiaryEntry>('jpl-diaries', diary, d => d.id);
   }
+  
+  // Obter usuário logado
+  const { data: { user } } = await supabase.auth.getUser();
+  
   const { error } = await supabase.from('diaries').upsert({
     id: diary.id,
     project_id: diary.projectId,
     data: diary as unknown as Json,
+    user_id: user?.id,
   });
   if (error) console.error('saveDiary error:', error);
   return loadDiaries(diary.projectId);

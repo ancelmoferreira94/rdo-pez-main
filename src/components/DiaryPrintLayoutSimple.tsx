@@ -1,3 +1,4 @@
+import React from 'react';
 import { DiaryEntry, Project } from '@/lib/types';
 import logoJpl from '@/assets/LOGO JPL GOMES ENGENHARIA SEM BORDA.png';
 import logoPez from '@/assets/logo-pez.jpg';
@@ -33,7 +34,7 @@ function fmtCur(value: number): string {
 
 const WEEKDAYS = ['domingo', 'segunda-feira', 'terça-feira', 'quarta-feira', 'quinta-feira', 'sexta-feira', 'sábado'];
 
-const DiaryPrintLayout = ({ diary, project, financialData, financialTotal, visibleSections }: PrintProps) => {
+const DiaryPrintLayoutSimple = ({ diary, project, financialData, financialTotal, visibleSections }: PrintProps) => {
   const show = (key: SectionKey) => visibleSections ? visibleSections[key] !== false : true;
 
   const dateObj = new Date(diary.date + 'T12:00:00');
@@ -51,207 +52,260 @@ const DiaryPrintLayout = ({ diary, project, financialData, financialTotal, visib
     else teams.push({ team: s.team, members: [s] });
   });
 
-  // Filter to only show non-empty rows
+  const activeForecasts = diary.serviceForecast.filter(s => s.jplOperating || s.jplStopped || s.thirdOperating || s.thirdStopped);
   const activeStaffTeams = teams.filter(t => t.members.some(m => m.quantity > 0));
-  const activeContractors = diary.contractors.filter(c => c.employees > 0 || c.companyName);
+  const activeContractors = diary.contractors.filter(c => c.employees > 0);
   const activeEquipment = diary.equipmentJpl.filter(e => e.quantity > 0);
   const activeLeasedEquipment = diary.leasedEquipment.filter(e => e.quantity > 0);
-  const activeForecasts = diary.serviceForecast.filter(s => s.jplOperating || s.jplStopped || s.thirdOperating || s.thirdStopped);
   const activeExecuted = diary.executedServices.filter(s => s.executedDay > 0 || s.executedMonth > 0);
 
   return (
-    <div className="print-layout">
+    <div className="print-wrapper">
       <style>{`
-        .print-layout {
-          font-family: Arial, Helvetica, sans-serif;
-          font-size: 8pt;
-          color: #000;
-          background: #fff;
-          max-width: 210mm;
-          margin: 0 auto;
-          padding: 5mm;
-        }
-        .print-layout table {
-          width: 100%;
-          border-collapse: collapse;
-          page-break-inside: avoid;
-        }
-        .print-layout th, .print-layout td {
-          border: 1px solid #333;
-          padding: 2px 4px;
-          text-align: left;
-          vertical-align: middle;
-        }
-        .print-layout th {
-          background: #1a237e;
-          color: #fff;
-          font-weight: bold;
-          text-align: center;
-          font-size: 8pt;
-        }
-        .section-header {
-          background: #283593;
-          color: #fff;
-          text-align: center;
-          font-weight: bold;
-          font-size: 9pt;
-          padding: 4px;
-        }
-        .team-header {
-          background: #e8eaf6;
-          font-weight: bold;
-        }
-        .total-row {
-          background: #e8eaf6;
-          font-weight: bold;
-        }
-        .logo-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 4px;
-        }
-        .logo-header img:first-child {
-          height: 45px;
-          display: block;
-        }
-        .logo-header img:last-child {
-          height: 45px;
-          display: block;
-        }
-        .header-title {
-          background: #1a237e;
-          color: #fff;
-          text-align: center;
-          font-size: 14pt;
-          font-weight: bold;
-          padding: 8px;
-        }
-        .weather-box {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          margin-right: 12px;
-        }
-        .weather-check {
-          width: 10px;
-          height: 10px;
-          border: 1px solid #333;
-          display: inline-block;
-        }
-        .weather-check.checked {
-          background: #333;
-        }
-        .financial-section td, .financial-section th {
-          text-align: center;
-        }
-        .text-right { text-align: right !important; }
-        .text-center { text-align: center !important; }
-        .text-left { text-align: left !important; }
-        .page-break { page-break-before: always; }
-        .print-section { page-break-inside: avoid; }
-        
-        /* Estilos específicos para impressão A4 */
         @media print {
+          * { box-sizing: border-box; }
+          
           @page {
             size: A4;
             margin: 10mm;
           }
           
-          * {
+          body {
+            margin: 0;
+            font-size: 10pt;
+            line-height: 1.2;
+            background: white !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
           
-          body {
-            font-size: 9pt;
-            line-height: 1.1;
-            margin: 0;
-            padding: 0;
-          }
-          
-          .print-container {
+          .print-wrapper {
             width: 100%;
+            background: white !important;
             overflow: visible !important;
           }
           
           .print-section {
             page-break-inside: avoid !important;
-            margin-bottom: 8px !important;
-            position: relative !important;
+            break-inside: avoid !important;
+            margin-bottom: 6px !important;
           }
           
-          .large-section {
-            page-break-inside: auto !important;
-          }
-          
-          .avoid-break {
-            page-break-inside: avoid !important;
-            page-break-after: auto !important;
-          }
-          
-          .break-before {
+          .page-break-before {
+            break-before: page !important;
             page-break-before: always !important;
           }
           
-          .break-after {
-            page-break-after: always !important;
-          }
-          
           table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 4px;
+            background: white !important;
             page-break-inside: avoid !important;
-            margin-bottom: 6px !important;
-            width: 100% !important;
+            break-inside: avoid !important;
           }
           
           thead {
             page-break-inside: avoid !important;
-            page-break-after: auto !important;
+            break-inside: avoid !important;
           }
           
           tbody {
             page-break-inside: avoid !important;
+            break-inside: avoid !important;
           }
           
           tr {
             page-break-inside: avoid !important;
-            page-break-after: auto !important;
+            break-inside: avoid !important;
           }
           
-          td, th {
+          th, td {
+            border: 1px solid #333 !important;
+            padding: 2px 4px;
+            vertical-align: top;
+            background: white !important;
             page-break-inside: avoid !important;
-            vertical-align: top !important;
+            break-inside: avoid !important;
+          }
+          
+          th {
+            background: #e8eaf6 !important;
+            font-weight: bold;
+            text-align: center;
           }
           
           .section-header {
-            page-break-after: auto !important;
+            background: #1a237e !important;
+            color: #fff !important;
+            font-weight: bold;
+            text-align: center;
+          }
+          
+          .header-title {
+            background: #1a237e !important;
+            color: #fff !important;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14pt;
+            padding: 8px;
+          }
+          
+          .total-row {
+            background: #e8eaf6 !important;
+            font-weight: bold;
+          }
+          
+          .team-header {
+            background: #e8eaf6 !important;
+            font-weight: bold;
+          }
+          
+          .text-right { text-align: right; }
+          .text-center { text-align: center; }
+          .text-left { text-align: left; }
+          
+          .logo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
             page-break-inside: avoid !important;
+            break-inside: avoid !important;
+          }
+          
+          .logo-header img {
+            height: 45px;
+            display: block !important;
+            visibility: visible !important;
+          }
+          
+          .weather-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-right: 12px;
+          }
+          
+          .weather-check {
+            width: 10px;
+            height: 10px;
+            border: 1px solid #333;
+            display: inline-block;
+          }
+          
+          .weather-check.checked {
+            background: #333 !important;
+          }
+          
+          .financial-section td, .financial-section th {
+            text-align: center;
           }
         }
         
-        /* Estilos para tela também */
-        .print-container {
-          width: 100%;
-          max-width: 210mm; /* Largura A4 */
-          margin: 0 auto;
-        }
-        .logo-header img {
-          display: block !important;
-          visibility: visible !important;
-          -webkit-print-color-adjust: exact !important;
-          print-color-adjust: exact !important;
+        /* Estilos para visualização na tela */
+        @media screen {
+          .print-wrapper {
+            max-width: 210mm;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          }
+          
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 4px;
+          }
+          
+          th, td {
+            border: 1px solid #333;
+            padding: 2px 4px;
+            vertical-align: top;
+          }
+          
+          th {
+            background: #e8eaf6;
+            font-weight: bold;
+            text-align: center;
+          }
+          
+          .section-header {
+            background: #1a237e;
+            color: #fff;
+            font-weight: bold;
+            text-align: center;
+          }
+          
+          .header-title {
+            background: #1a237e;
+            color: #fff;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14pt;
+            padding: 8px;
+          }
+          
+          .total-row {
+            background: #e8eaf6;
+            font-weight: bold;
+          }
+          
+          .team-header {
+            background: #e8eaf6;
+            font-weight: bold;
+          }
+          
+          .text-right { text-align: right; }
+          .text-center { text-align: center; }
+          .text-left { text-align: left; }
+          
+          .logo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+          }
+          
+          .logo-header img {
+            height: 45px;
+            display: block;
+          }
+          
+          .weather-box {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-right: 12px;
+          }
+          
+          .weather-check {
+            width: 10px;
+            height: 10px;
+            border: 1px solid #333;
+            display: inline-block;
+          }
+          
+          .weather-check.checked {
+            background: #333;
+          }
+          
+          .financial-section td, .financial-section th {
+            text-align: center;
+          }
         }
       `}</style>
 
-      <div className="print-container" id="print-container">
-        {/* Header with logos */}
-        <div className="logo-header avoid-break">
+      {/* Header with logos */}
+      <div className="logo-header print-section">
         <img src={logoJpl} alt="JPL Gomes Engenharia" />
         <img src={logoPez} alt="Grupo PEZ" />
       </div>
 
       {/* Contract info header */}
-      <table className="avoid-break" style={{ marginBottom: 4 }}>
+      <table className="print-section" style={{ marginBottom: 4 }}>
         <tbody>
           <tr>
             <td style={{ width: '15%' }}><strong>Contrato(s):</strong></td>
@@ -274,7 +328,7 @@ const DiaryPrintLayout = ({ diary, project, financialData, financialTotal, visib
       </table>
 
       {/* Date and weather row */}
-      <table className="avoid-break" style={{ marginBottom: 4 }}>
+      <table className="print-section" style={{ marginBottom: 4 }}>
         <tbody>
           <tr>
             <td style={{ width: '20%', textAlign: 'center', fontWeight: 'bold', fontSize: '10pt' }}>
@@ -295,9 +349,8 @@ const DiaryPrintLayout = ({ diary, project, financialData, financialTotal, visib
 
       {/* Service Forecast */}
       {show('forecast') && activeForecasts.length > 0 && (
-        <div>
-          <div className="break-before"></div>
-          <table className="print-section" style={{ marginBottom: 4, fontSize: '8pt' }}>
+        <div className="page-break-before print-section">
+          <table style={{ marginBottom: 4 }}>
           <thead>
             <tr>
               <th colSpan={4} className="section-header">PREVISÃO DE SERVIÇOS</th>
@@ -335,9 +388,8 @@ const DiaryPrintLayout = ({ diary, project, financialData, financialTotal, visib
 
       {/* Staff */}
       {show('staff') && activeStaffTeams.length > 0 && (
-        <div>
-          <div className="break-before"></div>
-          <table className="print-section" style={{ marginBottom: 4, fontSize: '8pt' }}>
+        <div className="page-break-before print-section">
+          <table style={{ marginBottom: 4 }}>
           <thead>
             <tr><th colSpan={3} className="section-header">QUADRO DE PESSOAL - JPL GOMES</th></tr>
             <tr>
@@ -347,24 +399,24 @@ const DiaryPrintLayout = ({ diary, project, financialData, financialTotal, visib
             </tr>
           </thead>
           <tbody>
-            {activeStaffTeams.map((team, ti) => {
-              const activeMembers = team.members.filter(m => m.quantity > 0);
-              const teamTotal = activeMembers.reduce((s, m) => s + m.quantity, 0);
-              return [
-                <tr key={`team-${ti}`} className="team-header">
-                  <td><strong>Equipe: {team.team}</strong></td>
-                  <td className="text-center"><strong>{teamTotal}</strong></td>
-                  <td></td>
-                </tr>,
-                ...activeMembers.map((m, mi) => (
-                  <tr key={`member-${ti}-${mi}`}>
-                    <td style={{ paddingLeft: 16 }}>{m.role}</td>
-                    <td className="text-center">{m.quantity}</td>
-                    <td>{m.observations}</td>
+            {activeStaffTeams.map((team, ti) => (
+              <React.Fragment key={ti}>
+                <tr className="team-header">
+                  <td colSpan={3}>{team.team}</td>
+                </tr>
+                {team.members.map((member, mi) => (
+                  <tr key={mi}>
+                    <td style={{ paddingLeft: '20px' }}>{member.role}</td>
+                    <td className="text-center">{member.quantity}</td>
+                    <td>{member.observations}</td>
                   </tr>
-                )),
-              ];
-            })}
+                ))}
+                <tr className="total-row">
+                  <td colSpan={2}><strong>TOTAL {team.team.toUpperCase()}</strong></td>
+                  <td className="text-center"><strong>{team.members.reduce((s, m) => s + m.quantity, 0)}</strong></td>
+                </tr>
+              </React.Fragment>
+            ))}
             <tr className="total-row">
               <td><strong>TOTAL QUADRO CONCRETA</strong></td>
               <td className="text-center"><strong>{totalStaff}</strong></td>
@@ -372,11 +424,13 @@ const DiaryPrintLayout = ({ diary, project, financialData, financialTotal, visib
             </tr>
           </tbody>
         </table>
+        </div>
       )}
 
       {/* Contractors */}
       {show('contractors') && activeContractors.length > 0 && (
-        <table className="print-section" style={{ marginBottom: 4 }}>
+        <div className="page-break-before print-section contractors-section">
+          <table style={{ marginBottom: 4 }}>
           <thead>
             <tr><th colSpan={4} className="section-header">QUADRO DE EMPREITEIROS</th></tr>
             <tr>
@@ -407,11 +461,13 @@ const DiaryPrintLayout = ({ diary, project, financialData, financialTotal, visib
             </tr>
           </tbody>
         </table>
+        </div>
       )}
 
       {/* Equipment JPL */}
       {show('equipmentJpl') && activeEquipment.length > 0 && (
-        <table className="print-section" style={{ marginBottom: 4 }}>
+        <div className="page-break-before print-section equipment-jpl-section">
+          <table style={{ marginBottom: 4 }}>
           <thead>
             <tr><th colSpan={5} className="section-header">ACOMPANHAMENTO DE EQUIPAMENTOS - TBL</th></tr>
             <tr>
@@ -439,11 +495,13 @@ const DiaryPrintLayout = ({ diary, project, financialData, financialTotal, visib
             </tr>
           </tbody>
         </table>
+        </div>
       )}
 
       {/* Leased Equipment */}
       {show('leasedEquipment') && activeLeasedEquipment.length > 0 && (
-        <table className="print-section" style={{ marginBottom: 4 }}>
+        <div className="page-break-before print-section leased-equipment-section">
+          <table style={{ marginBottom: 4 }}>
           <thead>
             <tr><th colSpan={7} className="section-header">ACOMPANHAMENTO DE EQUIPAMENTOS - LOCADOS</th></tr>
             <tr>
@@ -480,11 +538,13 @@ const DiaryPrintLayout = ({ diary, project, financialData, financialTotal, visib
             </tr>
           </tbody>
         </table>
+        </div>
       )}
 
       {/* Executed Services */}
       {show('executed') && activeExecuted.length > 0 && (
-        <table className="large-section" style={{ marginBottom: 4 }}>
+        <div className="page-break-before print-section executed-services-section">
+          <table style={{ marginBottom: 4 }}>
           <thead>
             <tr>
               <th colSpan={7} className="section-header">SERVIÇOS EXECUTADOS</th>
@@ -531,7 +591,8 @@ const DiaryPrintLayout = ({ diary, project, financialData, financialTotal, visib
 
       {/* Financial Control */}
       {show('financial') && (
-        <table className="print-section financial-section" style={{ marginBottom: 4 }}>
+        <div className="page-break-before print-section financial-control-section">
+          <table style={{ marginBottom: 4 }} className="financial-section">
           <thead>
             <tr>
               <th colSpan={4} className="section-header">CONTROLE FINANCEIRO</th>
@@ -591,30 +652,30 @@ const DiaryPrintLayout = ({ diary, project, financialData, financialTotal, visib
             </tr>
           </tbody>
         </table>
+        </div>
       )}
 
       {/* Observations */}
       {show('observations') && diary.observations?.trim() && (
-        <>
-          <div className="page-break"></div>
-          <table className="print-section" style={{ marginBottom: 8 }}>
-            <thead>
-              <tr><th className="section-header">OBSERVAÇÕES</th></tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style={{ minHeight: 120, whiteSpace: 'pre-wrap', padding: 8, verticalAlign: 'top' }}>
-                  {diary.observations}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </>
+        <div className="page-break-before print-section observations-section">
+          <table style={{ marginBottom: 8 }}>
+          <thead>
+            <tr><th className="section-header">OBSERVAÇÕES</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style={{ minHeight: 120, whiteSpace: 'pre-wrap', padding: 8, verticalAlign: 'top' }}>
+                {diary.observations}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
       )}
 
       {/* Photos */}
       {show('photos') && diary.photos.length > 0 && (
-        <div className="print-section">
+        <div className="page-break-before print-section photos-section">
           <p style={{ fontWeight: 'bold', marginBottom: 4, fontSize: '9pt' }}>Fotos:</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4 }}>
             {diary.photos.map((photo, i) => (
@@ -630,8 +691,7 @@ const DiaryPrintLayout = ({ diary, project, financialData, financialTotal, visib
         </div>
       )}
     </div>
-      </div>
   );
 };
 
-export default DiaryPrintLayout;
+export default DiaryPrintLayoutSimple;

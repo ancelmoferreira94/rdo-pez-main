@@ -11,10 +11,14 @@ import DiaryForm from '@/components/DiaryForm';
 import ProjectList from '@/components/ProjectList';
 import ProjectSettings from '@/components/ProjectSettings';
 import MonthlyPlanning from '@/components/MonthlyPlanning';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { LogOut, User } from 'lucide-react';
 
 type View = 'projects' | 'diaries' | 'form' | 'project-settings' | 'planning';
 
 const Index = () => {
+  const { user, signOut } = useAuth();
   const [view, setView] = useState<View>('projects');
   const [projects, setProjects] = useState<Project[]>([]);
   const [diaries, setDiaries] = useState<DiaryEntry[]>([]);
@@ -102,6 +106,13 @@ const Index = () => {
     toast.success('Diário excluído com sucesso!');
   }, [currentProject]);
 
+  // === Handlers de Autenticação ===
+
+  const handleSignOut = useCallback(async () => {
+    await signOut();
+    toast.success('Logout realizado com sucesso!');
+  }, [signOut]);
+
   // === Navegação ===
 
   const handleCancel = useCallback(() => {
@@ -147,6 +158,27 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Header com usuário e logout */}
+      <div className="bg-white border-b border-gray-200 px-4 py-3">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center space-x-2">
+            <User className="h-4 w-4 text-gray-600" />
+            <span className="text-sm text-gray-700">
+              {user?.email || 'Usuário'}
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleSignOut}
+            className="flex items-center space-x-2"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Sair</span>
+          </Button>
+        </div>
+      </div>
+
       {view === 'projects' && (
         <ProjectList
           projects={projects}

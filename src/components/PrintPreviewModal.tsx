@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Printer } from 'lucide-react';
-import DiaryPrintLayout from '@/components/DiaryPrintLayout';
+import DiaryPrintLayoutSimple from '@/components/DiaryPrintLayoutSimple';
 
 interface PrintPreviewModalProps {
   open: boolean;
@@ -77,7 +77,7 @@ const PrintPreviewModal = ({ open, onOpenChange, diary, project, financialData, 
 
         {/* Print content */}
         <div id="print-content">
-          <DiaryPrintLayout
+          <DiaryPrintLayoutSimple
             diary={diary}
             project={project}
             financialData={financialData}
